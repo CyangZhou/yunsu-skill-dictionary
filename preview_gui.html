@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>云舒字典 (Cloud Shu Dictionary) - Dashboard</title>
+    <style>
+        :root {
+            --neon-cyan: #00f0ff;
+            --neon-pink: #ff003c;
+            --neon-gold: #ffd700;
+            --bg-color: #0d1117;
+            --panel-bg: #161b22;
+            --card-bg: #21262d;
+            --text-color: #c9d1d9;
+            --border-color: #30363d;
+        }
+        body {
+            font-family: 'Consolas', 'Courier New', monospace;
+            padding: 20px;
+            color: var(--text-color);
+            background-color: var(--bg-color);
+            margin: 0;
+        }
+        /* Dashboard Styles */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        h1 {
+            font-size: 1.5em;
+            margin: 0;
+            color: var(--neon-cyan);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 0 0 5px var(--neon-cyan);
+        }
+        .status-badge {
+            background-color: #1f6feb;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 0.8em;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            padding: 20px;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        .card:hover {
+            border-color: var(--neon-cyan);
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.1);
+            transform: translateY(-2px);
+        }
+        .card.premium {
+            border-color: var(--neon-gold);
+        }
+        .card.premium:hover {
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.2);
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .card-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: var(--text-color);
+        }
+        .card-type {
+            font-size: 0.8em;
+            color: #8b949e;
+            text-transform: uppercase;
+        }
+        .card-desc {
+            font-size: 0.9em;
+            color: #8b949e;
+            margin-bottom: 20px;
+            height: 40px;
+            overflow: hidden;
+        }
+        .card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .btn {
+            background-color: transparent;
+            border: 1px solid var(--neon-cyan);
+            color: var(--neon-cyan);
+            padding: 8px 16px;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+        .btn:hover {
+            background-color: var(--neon-cyan);
+            color: #000;
+        }
+        .btn-install {
+            border-color: #238636;
+            color: #238636;
+        }
+        .btn-install:hover {
+            background-color: #238636;
+            color: white;
+        }
+        .btn-premium {
+            border-color: var(--neon-gold);
+            color: var(--neon-gold);
+        }
+        .btn-premium:hover {
+            background-color: var(--neon-gold);
+            color: #000;
+        }
+        .tag {
+            font-size: 0.8em;
+            padding: 2px 6px;
+            border-radius: 3px;
+            border: 1px solid #30363d;
+        }
+        .tag-vip {
+            border-color: var(--neon-gold);
+            color: var(--neon-gold);
+        }
+        .fab {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: var(--neon-pink);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 30px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            cursor: pointer;
+            border: none;
+            transition: transform 0.2s;
+            z-index: 100;
+        }
+        .fab:hover {
+            transform: scale(1.1);
+        }
+        .section-title {
+            color: var(--neon-pink);
+            margin-top: 40px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        /* Form Styles (Hidden by default) */
+        #form-view {
+            display: none;
+            max-width: 500px;
+            margin: 0 auto;
+            background-color: var(--panel-bg);
+            padding: 40px;
+            border: 1px solid var(--neon-cyan);
+            box-shadow: 0 0 10px rgba(0, 240, 255, 0.2);
+        }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: bold; color: var(--neon-pink); }
+        input, select, textarea {
+            width: 100%; padding: 12px; background-color: #000; border: 1px solid var(--border-color);
+            color: var(--neon-cyan); font-family: inherit; box-sizing: border-box;
+        }
+        input:focus, select:focus, textarea:focus {
+            outline: none; border-color: var(--neon-cyan); box-shadow: 0 0 5px rgba(0, 240, 255, 0.5);
+        }
+        .back-btn {
+            background: none; border: none; color: #8b949e; cursor: pointer; margin-bottom: 20px; font-size: 1.1em;
+        }
+        .back-btn:hover { color: var(--neon-cyan); }
+        .checkbox-group { display: flex; align-items: center; margin-top: 10px; }
+        .checkbox-group input { width: auto; margin-right: 10px; }
+    </style>
+</head>
+<body>
+    <!-- DASHBOARD VIEW -->
+    <div id="dashboard-view">
+        <div class="header">
+            <div>
+                <h1>CLOUD SHU <span style="font-size:0.5em; color: var(--text-color);">DICTIONARY</span></h1>
+                <div style="font-size: 0.8em; color: #8b949e; margin-top: 5px;">连接云端大脑 • 赋能代码逻辑</div>
+            </div>
+            <div class="status-badge">● Online</div>
+        </div>
+
+        <h2 class="section-title">✨ 精选技能 (Featured Skills)</h2>
+        <div class="grid">
+            <div class="card premium" id="card-caiyuan">
+                <div class="card-header">
+                    <div class="card-title">财源广进</div>
+                    <div class="tag tag-vip">VIP</div>
+                </div>
+                <div class="card-type">Stock Analysis AI</div>
+                <div class="card-desc">实时接入纳斯达克数据，利用 LSTM 模型预测股价走势。需要 API Key。</div>
+                <div class="card-footer">
+                    <span style="color: var(--neon-gold); font-weight: bold;">¥50.00</span>
+                    <button class="btn btn-premium" onclick="unlockSkill('cai-yuan-guang-jin')">解锁 (Unlock)</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">日新月异</div>
+                    <div class="tag">已安装</div>
+                </div>
+                <div class="card-type">GitHub Trends</div>
+                <div class="card-desc">自动抓取 GitHub 每日热门项目并生成中文日报。</div>
+                <div class="card-footer">
+                    <span style="color: #8b949e;">Free</span>
+                    <button class="btn" disabled>已拥有</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">妙手回春</div>
+                </div>
+                <div class="card-type">Code Refactoring</div>
+                <div class="card-desc">利用 AST 分析代码结构，自动修复常见 Bug 并优化可读性。</div>
+                <div class="card-footer">
+                    <span style="color: #8b949e;">Free</span>
+                    <button class="btn btn-install" onclick="installSkill('miao-shou-hui-chun', this)">安装 (Install)</button>
+                </div>
+            </div>
+        </div>
+
+        <h2 class="section-title">📂 本地技能 (My Skills)</h2>
+        <div class="grid">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">bian (变)</div>
+                    <div class="card-type">Utility</div>
+                </div>
+                <div class="card-desc">JSON / String 格式转换工具。</div>
+                <div class="card-footer">
+                    <button class="btn">编辑 (Edit)</button>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">ni-hao (你好)</div>
+                    <div class="card-type">Demo</div>
+                </div>
+                <div class="card-desc">基础问候技能示例。</div>
+                <div class="card-footer">
+                    <button class="btn">编辑 (Edit)</button>
+                </div>
+            </div>
+        </div>
+
+        <button class="fab" title="Create New Skill" onclick="showForm()">+</button>
+    </div>
+
+    <!-- FORM VIEW -->
+    <div id="form-view">
+        <button class="back-btn" onclick="showDashboard()">← Back to Dashboard</button>
+        <h1 style="text-align: center; margin-bottom: 30px;">SKILL FORGE</h1>
+        
+        <div class="form-group">
+            <label for="name">ID (拼音/英文)</label>
+            <input type="text" id="name" placeholder="例如: bian, ni-hao" required>
+        </div>
+        <div class="form-group">
+            <label for="hanzi">显示名称 (汉字)</label>
+            <input type="text" id="hanzi" placeholder="例如: 变, 你好">
+        </div>
+        <div class="form-group">
+            <label for="type">技能类型</label>
+            <select id="type">
+                <option value="character">单字技能 (Character)</option>
+                <option value="idiom">成语技能 (Idiom)</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="description">技能描述</label>
+            <textarea id="description" rows="3" placeholder="这个技能是做什么的？"></textarea>
+        </div>
+        <div class="checkbox-group">
+            <input type="checkbox" id="aiGenerate" checked>
+            <label for="aiGenerate">启用 AI 自动生成代码模板</label>
+        </div>
+        <button class="btn" style="width:100%; margin-top:20px;" id="createBtn">INITIALIZE (启动锻造)</button>
+    </div>
+
+    <script>
+        const vscode = { postMessage: (msg) => { console.log('Mock Message:', msg); } }; // Mock for preview
+
+        function showForm() {
+            document.getElementById('dashboard-view').style.display = 'none';
+            document.getElementById('form-view').style.display = 'block';
+        }
+
+        function showDashboard() {
+            document.getElementById('form-view').style.display = 'none';
+            document.getElementById('dashboard-view').style.display = 'block';
+        }
+
+        function installSkill(name, btn) {
+            btn.innerText = 'Installing...';
+            vscode.postMessage({ command: 'installSkill', skillName: name });
+            // Optimistic update
+            setTimeout(() => {
+                btn.innerText = '已安装';
+                btn.disabled = true;
+                btn.classList.remove('btn-install');
+                btn.classList.add('btn');
+                alert('[Mock] 技能已安装');
+            }, 1000);
+        }
+
+        function unlockSkill(name) {
+            const key = prompt('[Mock] 请输入 Key (输入 vip-888):');
+            if (key === 'vip-888') {
+                const btn = document.querySelector('#card-caiyuan .btn-premium');
+                if (btn) {
+                    btn.innerText = '已解锁';
+                    btn.classList.remove('btn-premium');
+                    btn.classList.add('btn');
+                    alert('[Mock] 解锁成功！');
+                }
+            } else if (key) {
+                alert('[Mock] Key 错误');
+            }
+            vscode.postMessage({ command: 'unlockSkill', skillName: name });
+        }
+
+        // Handle messages from extension (Mock listener)
+        window.addEventListener('message', event => {
+            const message = event.data;
+            switch (message.command) {
+                case 'unlockSuccess':
+                    // In real app, this is handled by the prompt callback above for mock
+                    break;
+            }
+        });
+
+        document.getElementById('createBtn').addEventListener('click', () => {
+            const name = document.getElementById('name').value;
+            const hanzi = document.getElementById('hanzi').value;
+            const type = document.getElementById('type').value;
+            const description = document.getElementById('description').value;
+            const aiGenerate = document.getElementById('aiGenerate').checked;
+            
+            if (!name) return;
+
+            vscode.postMessage({
+                command: 'createSkill',
+                data: { name, hanzi, type, description, aiGenerate }
+            });
+            
+            alert(`[Mock] Creating skill: ${name}`);
+        });
+    </script>
+</body>
+</html>
